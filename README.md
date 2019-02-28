@@ -1,1 +1,3 @@
-Create README.md
+# Transfer autoencoder
+
+More information in `transfer-autoencoder.ipynb`
