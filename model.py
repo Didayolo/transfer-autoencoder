@@ -8,16 +8,17 @@ load_model = tf.keras.models.load_model
 
 class TAE():
 
-    def __init__(self, autoencoder_name='autoencoder', load=True, path='', verbose=False):
+    def __init__(self, autoencoder_name='autoencoder', shape=(1, 52, 52, 3), load=True, path='', verbose=False):
         if load:
             self.autoencoder = self.load_autoencoder(path, verbose=verbose)
         else:
-            self.autoencoder = self.init_autoencoder(name=autoencoder_name, verbose=verbose)
+            self.autoencoder = self.init_autoencoder(name=autoencoder_name, input_shape=shape, verbose=verbose)
 
         self.encoder = self.init_encoder(verbose=verbose)
         self.model = self.init_model(verbose=verbose)
 
-    def init_autoencoder(self, name='autoencoder', input_shape=(1,28,28,1), verbose=False):
+    def init_autoencoder(self, name='autoencoder', input_shape=(1, 52, 52, 3), verbose=False):
+        # TODO: automatically set architecture according to input_shape
         kernel = (1, 3, 3)
         pool = (1, 2, 2)
         strides = (2,2,2)
@@ -32,7 +33,7 @@ class TAE():
 
         # Flatten encoding for visualization
         autoencoder.add(Flatten())
-        autoencoder.add(Reshape((1, 4, 4, 8)))
+        autoencoder.add(Reshape((1, 7, 7, 8)))
 
         # Decoder Layers
         autoencoder.add(Conv3D(8, kernel, activation='relu', padding='same'))
@@ -41,7 +42,7 @@ class TAE():
         autoencoder.add(UpSampling3D(pool))
         autoencoder.add(Conv3D(16, kernel, activation='relu'))
         autoencoder.add(UpSampling3D(pool))
-        autoencoder.add(Conv3D(1, kernel, activation='sigmoid', padding='same'))
+        autoencoder.add(Conv3D(3, kernel, activation='sigmoid', padding='same'))
 
         autoencoder.compile(optimizer='adam', loss='binary_crossentropy')
         print('{} initialized.'.format(name))
@@ -71,6 +72,20 @@ class TAE():
         if verbose:
             encoder.summary()
         return encoder
+
+    def init_decoder(self, verbose=False):
+        print('todo')
+        pass
+        #decoder = Model(inputs=self.autoencoder.get_layer('reshape', 6), outputs=self.autoencoder.get_layer('conv_3d', -1).output)
+        #print('encoder initialized.')
+        #if verbose:
+        #    decoder.summary()
+        #return decoder
+        #deco = self.autoencoder.layers[-3](encoded_input)
+        #deco = self.autoencoder.layers[-2](deco)
+        #deco = self.autoencoder.layers[-1](deco)
+        # create the decoder model
+        #decoder = Model(encoded_input, deco)
 
     def init_model(self, verbose=False):
         model = Sequential()
