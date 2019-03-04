@@ -59,8 +59,26 @@ def input_fn(dataset, perform_shuffle=False, batch_size=1, shape=GLOBAL_SHAPE, p
 
 def show_example(tensor_4d, labels=None):
     input_shape = tensor_4d.shape
-    print(input_shape)
+    print('Shape:', input_shape)
     shape = (input_shape[1], input_shape[2], 3)
     if labels is not None:
-        print(labels)
-    plt.imshow(tensor_4d.reshape(shape))
+        print('Label:', labels)
+
+    # if image example
+    show_image(tensor_4d)
+
+def show_image(tensor_4d):
+  """Visualize a image represented by `tensor_4d` in RGB or grayscale."""
+  num_channels = tensor_4d.shape[-1]
+  image = np.squeeze(tensor_4d[0])
+  # If the entries are float but in [0,255]
+  if not np.issubdtype(image.dtype, np.integer) and np.max(image) > 100:
+    image = image / 256
+  if num_channels == 1:
+    plt.imshow(image, cmap='gray')
+  else:
+    if not num_channels == 3:
+      raise ValueError("Expected num_channels = 3 but got {} instead."\
+                       .format(num_channels))
+    plt.imshow(image)
+  plt.show()
