@@ -10,14 +10,21 @@ from dataset import AutoDLDataset
 GLOBAL_SHAPE = (1, 52, 52, 3)
 GLOBAL_PADDING = False # Padding currently does not work for every dataset (TODO)
 
-def load_dataset(input_dir, basename, batch_size=1, shape=GLOBAL_SHAPE, padding=GLOBAL_PADDING):
+def load_dataset(input_dir, basename, batch_size=1, shape=GLOBAL_SHAPE, padding=GLOBAL_PADDING, train_test_split=False, test_size=5000):
     # Corrections of input_dir and basename
     input_dir = os.path.join(input_dir, basename)
     basename = basename + '.data' # why?
     D_train = AutoDLDataset(os.path.join(input_dir, basename, 'train'))
     D_test = AutoDLDataset(os.path.join(input_dir, basename, 'test'))
-    x_train, y_train = input_fn(D_train.get_dataset(), batch_size=batch_size,shape=shape, padding=padding)
-    x_test, y_test = input_fn(D_test.get_dataset(), batch_size=batch_size, shape=shape, padding=padding)
+    if train_test_split:
+        data = D_train.get_dataset()
+        data_test = data.take(test_size)
+        data_train = data.skip(test_size)
+    else:
+        data_train = D_train.get_dataset()
+        data_test = D_test.get_dataset()
+    x_train, y_train = input_fn(data_train, batch_size=batch_size,shape=shape, padding=padding)
+    x_test, y_test = input_fn(data_test, batch_size=batch_size,shape=shape, padding=padding)
     return x_train, y_train, x_test, y_test
 
 def processing(tensor_4d, label, shape=GLOBAL_SHAPE, padding=GLOBAL_PADDING):

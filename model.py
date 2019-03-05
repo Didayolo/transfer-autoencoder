@@ -87,12 +87,12 @@ class TAE():
         # create the decoder model
         #decoder = Model(encoded_input, deco)
 
-    def init_model(self, verbose=False):
+    def init_model(self, output_dim=10, verbose=False):
         model = Sequential()
         model.add(self.encoder)
         model.add(Dense(512, activation=tf.nn.relu))
         model.add(Dropout(0.2))
-        model.add(Dense(10, activation=tf.nn.sigmoid))
+        model.add(Dense(output_dim, activation=tf.nn.sigmoid))
 
         model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
         print('model initialized.')
