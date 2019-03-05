@@ -74,18 +74,18 @@ class TAE():
         return encoder
 
     def init_decoder(self, verbose=False):
-        print('todo')
-        pass
+        # TODO : construct automatically from input_shape
         #decoder = Model(inputs=self.autoencoder.get_layer('reshape', 6), outputs=self.autoencoder.get_layer('conv_3d', -1).output)
-        #print('encoder initialized.')
-        #if verbose:
-        #    decoder.summary()
-        #return decoder
-        #deco = self.autoencoder.layers[-3](encoded_input)
-        #deco = self.autoencoder.layers[-2](deco)
-        #deco = self.autoencoder.layers[-1](deco)
+        encoded_input = Input(shape=(392,))
+        deco = self.autoencoder.layers[-8](encoded_input)
+        for i in range(-7, 0):
+            deco = self.autoencoder.layers[i](deco)
         # create the decoder model
-        #decoder = Model(encoded_input, deco)
+        decoder = Model(encoded_input, deco)
+        print('decoder initialized.')
+        if verbose:
+            decoder.summary()
+        return decoder
 
     def init_model(self, output_dim=10, verbose=False):
         model = Sequential()
@@ -93,11 +93,8 @@ class TAE():
         model.add(Dense(512, activation=tf.nn.relu))
         model.add(Dropout(0.2))
         model.add(Dense(output_dim, activation=tf.nn.sigmoid))
-
         model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
         print('model initialized.')
-
         if verbose:
             model.summary()
-
         return model

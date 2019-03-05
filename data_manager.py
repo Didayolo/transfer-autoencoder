@@ -64,6 +64,9 @@ def input_fn(dataset, perform_shuffle=False, batch_size=1, shape=GLOBAL_SHAPE, p
     batch_features, batch_labels = iterator.get_next()
     return batch_features, batch_labels
 
+def tensor_to_array(tensor):
+    return tf.Session().run(tensor)
+
 def show_example(tensor_4d, labels=None):
     input_shape = tensor_4d.shape
     print('Shape:', input_shape)
