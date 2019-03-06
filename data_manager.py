@@ -7,10 +7,7 @@ INGESTION_PATH = '/home/adrien/Documents/autodl/codalab_competition_bundle/AutoD
 sys.path.append(INGESTION_PATH)
 from dataset import AutoDLDataset
 
-GLOBAL_SHAPE = (1, 52, 52, 3)
-GLOBAL_PADDING = False # Padding currently does not work for every dataset (TODO)
-
-def load_dataset(input_dir, basename, batch_size=1, shape=GLOBAL_SHAPE, padding=GLOBAL_PADDING, train_test_split=False, test_size=5000):
+def load_dataset(input_dir, basename, shape, padding=False, batch_size=1, train_test_split=False, test_size=5000):
     # Corrections of input_dir and basename
     input_dir = os.path.join(input_dir, basename)
     basename = basename + '.data' # why?
@@ -27,7 +24,7 @@ def load_dataset(input_dir, basename, batch_size=1, shape=GLOBAL_SHAPE, padding=
     x_test, y_test = input_fn(data_test, batch_size=batch_size,shape=shape, padding=padding)
     return x_train, y_train, x_test, y_test
 
-def processing(tensor_4d, label, shape=GLOBAL_SHAPE, padding=GLOBAL_PADDING):
+def processing(tensor_4d, label, shape, padding=False):
     # Process data shape
     # Resize and pad tensor to a certain shape e.g. (1, 50, 50, 3)
     time, row, col, channel = 0, 1, 2, 3
@@ -52,7 +49,7 @@ def processing(tensor_4d, label, shape=GLOBAL_SHAPE, padding=GLOBAL_PADDING):
 
     return tensor_4d, label
 
-def input_fn(dataset, perform_shuffle=False, batch_size=1, shape=GLOBAL_SHAPE, padding=GLOBAL_PADDING):
+def input_fn(dataset, shape, perform_shuffle=False, batch_size=1, padding=False):
     dataset = dataset.map(lambda x, y: processing(x, y, shape=shape, padding=padding))
     if perform_shuffle:
         # Randomizes input using a window of 256 elements (read into memory)
@@ -92,3 +89,11 @@ def show_image(tensor_4d):
                        .format(num_channels))
     plt.imshow(image)
   plt.show()
+
+def get_example(input_dir, basename, shape, padding=False, train_test_split=False):
+    # Load a dataset
+    x_train, y_train, x_test, y_test = load_dataset(input_dir, basename, shape,
+                                                  batch_size=256,
+                                                  padding=padding, train_test_split=train_test_split)
+    with tf.Session() as sess:
+        return sess.run(x_test), sess.run(y_test)
