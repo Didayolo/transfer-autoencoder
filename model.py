@@ -14,6 +14,9 @@ DATA_PATH = '/home/adrien/Documents/autodl-data/image/formatted_datasets/'
 class TAE():
 
     def __init__(self, name='autoencoder', shape=(1, 52, 52, 3), load=True, save=True, padding=False, train_test_split=True, verbose=False):
+        """ Train autoencoder with data from different sources.
+            Encode data and train a model.
+        """
         self.load = load
         self.save = save
         self.verbose = verbose
@@ -32,7 +35,9 @@ class TAE():
         self.decoder = self.init_decoder(verbose=verbose    )
 
     def init_autoencoder(self, name='autoencoder', input_shape=(1, 52, 52, 3), verbose=False):
-        # TODO: automatically set architecture according to input_shape
+        """ Definition of the autoencoder.
+            TODO: automatically set architecture according to input_shape.
+        """
         kernel = (1, 3, 3)
         pool = (1, 2, 2)
         strides = (2, 2, 2)
@@ -65,6 +70,8 @@ class TAE():
         return autoencoder
 
     def load_autoencoder(self, path, verbose=False):
+        """ Load autoencoder from file.
+        """
         if os.path.isfile(path):
             autoencoder = load_model(path)
             autoencoder.compile(optimizer='adam', loss='binary_crossentropy')
@@ -76,11 +83,15 @@ class TAE():
             return self.init_autoencoder(verbose=verbose)
 
     def save_autoencoder(self, path, verbose=False):
+        """ Save autoencoder to file.
+        """
         self.autoencoder.save(path)
         name = os.path.basename(os.path.normpath(path))
         print('{} saved.'.format(name))
 
     def init_encoder(self, verbose=False):
+        """ Return the first part of the autoencoder.
+        """
         encoder = Model(inputs=self.autoencoder.input, outputs=self.autoencoder.get_layer('flatten', 5).output)
         print('encoder initialized.')
         if verbose:
@@ -88,6 +99,8 @@ class TAE():
         return encoder
 
     def init_decoder(self, verbose=False):
+        """ Return the second part of the autoencoder.
+        """
         # TODO : construct automatically from input_shape
         #decoder = Model(inputs=self.autoencoder.get_layer('reshape', 6), outputs=self.autoencoder.get_layer('conv_3d', -1).output)
         encoded_input = Input(shape=(392,))
@@ -102,6 +115,8 @@ class TAE():
         return decoder
 
     def init_model(self, output_dim=10, verbose=False, model=None):
+        """ Define a model to solve a multiclass classification problem.
+        """
         if model is None:
             model = Sequential()
             model.add(self.encoder)
@@ -116,8 +131,10 @@ class TAE():
         return model
 
     def metafit(self, datasets, meta_epoch=1, batch_size=256, epochs=1, steps_per_epoch=100, test_size=200):
-        # Fit autoencoder on many datasets
-        # Il serait interessant de tracer les courbes d'apprentissage sur les differents datasets simultanements
+        """
+        Fit autoencoder on many datasets.
+        Il serait interessant de tracer les courbes d'apprentissage sur les differents datasets simultanements.
+        """
         for i in range(meta_epoch):
             print('Meta-epoch {}/{}'.format(i+1, meta_epoch))
             for dataset in datasets:
@@ -138,7 +155,8 @@ class TAE():
             self.save_autoencoder(self.save_path)
 
     def benchmark(self, datasets, batch_size=256, epochs=1, steps_per_epoch=100, test_size=200, model=None):
-        # Train and evaluate model on datasets
+        """ Train and evaluate model on datasets.
+        """
         for dataset in datasets:
             print('Testing on', dataset)
             x_train, y_train, x_test, y_test = load_dataset(DATA_PATH, dataset,
@@ -164,12 +182,12 @@ class TAE():
                 model.fit(features_train, tensor_to_array(y_train))
                 model.score(features_test, tensor_to_array(y_test))
 
-    def show_example(self, dataset, n=0):
-        tensor_4d, labels = get_example(DATA_PATH, dataset, shape=self.shape, padding=self.padding, train_test_split=self.train_test_split)
+    def show_example(self, dataset, n=0, test=True):
+        tensor_4d, labels = get_example(DATA_PATH, dataset, shape=self.shape, padding=self.padding, train_test_split=self.train_test_split, test=test)
         show_example(tensor_4d[n], labels[n])
 
-    def show_reconstructed_example(self, dataset, n=0):
-        tensor_4d, labels = get_example(DATA_PATH, dataset, shape=self.shape, padding=self.padding, train_test_split=self.train_test_split)
+    def show_reconstructed_example(self, dataset, n=0, test=True):
+        tensor_4d, labels = get_example(DATA_PATH, dataset, shape=self.shape, padding=self.padding, train_test_split=self.train_test_split, test=test)
         reconstructed_tensor_4d = self.autoencoder.predict(tensor_4d)
         show_example(reconstructed_tensor_4d[n])
 
